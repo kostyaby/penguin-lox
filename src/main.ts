@@ -4,11 +4,8 @@ import readline from "node:readline";
 
 import { ErrorSink } from "./error_sink";
 import { Lexer } from "./lexer";
-
-//
 import { AstPrinter } from "./ast_printer";
-import { Token, TokenType } from "./token";
-import * as expr from "./expr";
+import { Parser } from "./parser";
 
 function run(source: string) {
   const errorSink = new ErrorSink();
@@ -19,23 +16,14 @@ function run(source: string) {
     process.exit(65);
   }
 
-  console.log(`Num of tokens: ${tokens.length}`);
-  console.log();
+  const parser = new Parser(errorSink, tokens);
+  const expression = parser.parse();
 
-  for (const token of tokens) {
-    console.log(token.toString());
+  if (errorSink.hadError) {
+    process.exit(65);
   }
 
-  const expression = new expr.BinaryExpression(
-    new expr.UnaryExpression(
-      new Token(TokenType.MINUS, "-", null, 1),
-      new expr.LiteralExpression(123)
-    ),
-    new Token(TokenType.STAR, "*", null, 1),
-    new expr.GroupingExpression(new expr.LiteralExpression(45.67))
-  );
-
-  console.log(new AstPrinter().print(expression));
+  console.log(new AstPrinter().print(expression!));
 }
 
 function runPrompt() {
