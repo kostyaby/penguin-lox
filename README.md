@@ -2,8 +2,8 @@
 
 TypeScript implementation of the Lox programming language.
 
-# Next steps
+## Things to do
 
-- Write a lexer
-- Write a TS interpretor
-- Write a TS-to-JS cross-compiler
+- [x] Write a lexer
+- [ ] Write a TS interpretor
+- [ ] Write a TS-to-JS cross-compiler
