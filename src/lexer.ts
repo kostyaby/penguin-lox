@@ -1,24 +1,5 @@
 import { ErrorSink } from "./error_sink";
-import { Token } from "./token";
-import { TokenType } from "./token_type";
-
-const KEYWORDS_MAP = new Map<string, TokenType>()
-  .set("and", TokenType.AND)
-  .set("class", TokenType.CLASS)
-  .set("else", TokenType.ELSE)
-  .set("false", TokenType.FALSE)
-  .set("for", TokenType.FOR)
-  .set("fun", TokenType.FUN)
-  .set("if", TokenType.IF)
-  .set("nil", TokenType.NIL)
-  .set("or", TokenType.OR)
-  .set("print", TokenType.PRINT)
-  .set("return", TokenType.RETURN)
-  .set("super", TokenType.SUPER)
-  .set("this", TokenType.THIS)
-  .set("true", TokenType.TRUE)
-  .set("var", TokenType.VAR)
-  .set("while", TokenType.WHILE);
+import { Token, TokenType } from "./token";
 
 export class Lexer {
   private readonly tokens: Token[] = [];
@@ -270,3 +251,21 @@ export class Lexer {
     this.tokens.push(new Token(type, text, literal ?? null, this.line));
   }
 }
+
+const KEYWORDS_MAP = new Map<string, TokenType>()
+  .set("and", TokenType.AND)
+  .set("class", TokenType.CLASS)
+  .set("else", TokenType.ELSE)
+  .set("false", TokenType.FALSE)
+  .set("for", TokenType.FOR)
+  .set("fun", TokenType.FUN)
+  .set("if", TokenType.IF)
+  .set("nil", TokenType.NIL)
+  .set("or", TokenType.OR)
+  .set("print", TokenType.PRINT)
+  .set("return", TokenType.RETURN)
+  .set("super", TokenType.SUPER)
+  .set("this", TokenType.THIS)
+  .set("true", TokenType.TRUE)
+  .set("var", TokenType.VAR)
+  .set("while", TokenType.WHILE);

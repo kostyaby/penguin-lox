@@ -2,24 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Lexer = void 0;
 const token_1 = require("./token");
-const token_type_1 = require("./token_type");
-const KEYWORDS_MAP = new Map()
-    .set("and", token_type_1.TokenType.AND)
-    .set("class", token_type_1.TokenType.CLASS)
-    .set("else", token_type_1.TokenType.ELSE)
-    .set("false", token_type_1.TokenType.FALSE)
-    .set("for", token_type_1.TokenType.FOR)
-    .set("fun", token_type_1.TokenType.FUN)
-    .set("if", token_type_1.TokenType.IF)
-    .set("nil", token_type_1.TokenType.NIL)
-    .set("or", token_type_1.TokenType.OR)
-    .set("print", token_type_1.TokenType.PRINT)
-    .set("return", token_type_1.TokenType.RETURN)
-    .set("super", token_type_1.TokenType.SUPER)
-    .set("this", token_type_1.TokenType.THIS)
-    .set("true", token_type_1.TokenType.TRUE)
-    .set("var", token_type_1.TokenType.VAR)
-    .set("while", token_type_1.TokenType.WHILE);
 class Lexer {
     errorSink;
     source;
@@ -37,71 +19,71 @@ class Lexer {
             this.start = this.current;
             this.scanToken();
         }
-        this.tokens.push(new token_1.Token(token_type_1.TokenType.EOF, "", null, this.line));
+        this.tokens.push(new token_1.Token(token_1.TokenType.EOF, "", null, this.line));
         return this.tokens;
     }
     scanToken() {
         const c = this.advance();
         switch (c) {
             case "(": {
-                this.addToken(token_type_1.TokenType.LEFT_PAREN);
+                this.addToken(token_1.TokenType.LEFT_PAREN);
                 break;
             }
             case ")": {
-                this.addToken(token_type_1.TokenType.RIGHT_PAREN);
+                this.addToken(token_1.TokenType.RIGHT_PAREN);
                 break;
             }
             case "{": {
-                this.addToken(token_type_1.TokenType.LEFT_BRACE);
+                this.addToken(token_1.TokenType.LEFT_BRACE);
                 break;
             }
             case "}": {
-                this.addToken(token_type_1.TokenType.RIGHT_BRACE);
+                this.addToken(token_1.TokenType.RIGHT_BRACE);
                 break;
             }
             case ",": {
-                this.addToken(token_type_1.TokenType.COMMA);
+                this.addToken(token_1.TokenType.COMMA);
                 break;
             }
             case ".": {
-                this.addToken(token_type_1.TokenType.DOT);
+                this.addToken(token_1.TokenType.DOT);
                 break;
             }
             case "-": {
-                this.addToken(token_type_1.TokenType.MINUS);
+                this.addToken(token_1.TokenType.MINUS);
                 break;
             }
             case "+": {
-                this.addToken(token_type_1.TokenType.PLUS);
+                this.addToken(token_1.TokenType.PLUS);
                 break;
             }
             case ";": {
-                this.addToken(token_type_1.TokenType.SEMICOLON);
+                this.addToken(token_1.TokenType.SEMICOLON);
                 break;
             }
             case "*": {
-                this.addToken(token_type_1.TokenType.STAR);
+                this.addToken(token_1.TokenType.STAR);
                 break;
             }
             case "!": {
-                this.addToken(this.match("=") ? token_type_1.TokenType.BANG_EQUAL : token_type_1.TokenType.BANG);
+                this.addToken(this.match("=") ? token_1.TokenType.BANG_EQUAL : token_1.TokenType.BANG);
                 break;
             }
             case "=": {
-                this.addToken(this.match("=") ? token_type_1.TokenType.EQUAL_EQUAL : token_type_1.TokenType.EQUAL);
+                this.addToken(this.match("=") ? token_1.TokenType.EQUAL_EQUAL : token_1.TokenType.EQUAL);
                 break;
             }
             case "<": {
-                this.addToken(this.match("=") ? token_type_1.TokenType.LESS_EQUAL : token_type_1.TokenType.LESS);
+                this.addToken(this.match("=") ? token_1.TokenType.LESS_EQUAL : token_1.TokenType.LESS);
                 break;
             }
             case ">": {
-                this.addToken(this.match("=") ? token_type_1.TokenType.GREATER_EQUAL : token_type_1.TokenType.GREATER);
+                this.addToken(this.match("=") ? token_1.TokenType.GREATER_EQUAL : token_1.TokenType.GREATER);
                 break;
             }
             case "/": {
                 if (!this.match("/")) {
-                    this.addToken(token_type_1.TokenType.SLASH);
+                    this.addToken(token_1.TokenType.SLASH);
                     break;
                 }
                 // A comment goes until the end of the line.
@@ -187,7 +169,7 @@ class Lexer {
             return;
         }
         this.advance(); // The closing ".
-        this.addToken(token_type_1.TokenType.STRING, this.source.slice(this.start + 1, this.current - 1));
+        this.addToken(token_1.TokenType.STRING, this.source.slice(this.start + 1, this.current - 1));
     }
     number() {
         while (this.isDigit(this.peek())) {
@@ -201,14 +183,14 @@ class Lexer {
                 this.advance();
             }
         }
-        this.addToken(token_type_1.TokenType.NUMBER, Number.parseFloat(this.source.slice(this.start, this.current)));
+        this.addToken(token_1.TokenType.NUMBER, Number.parseFloat(this.source.slice(this.start, this.current)));
     }
     identifier() {
         while (this.isAlphaDigit(this.peek())) {
             this.advance();
         }
         const text = this.source.slice(this.start, this.current);
-        const type = KEYWORDS_MAP.get(text) ?? token_type_1.TokenType.IDENTIFIER;
+        const type = KEYWORDS_MAP.get(text) ?? token_1.TokenType.IDENTIFIER;
         this.addToken(type);
     }
     addToken(type, literal) {
@@ -217,3 +199,20 @@ class Lexer {
     }
 }
 exports.Lexer = Lexer;
+const KEYWORDS_MAP = new Map()
+    .set("and", token_1.TokenType.AND)
+    .set("class", token_1.TokenType.CLASS)
+    .set("else", token_1.TokenType.ELSE)
+    .set("false", token_1.TokenType.FALSE)
+    .set("for", token_1.TokenType.FOR)
+    .set("fun", token_1.TokenType.FUN)
+    .set("if", token_1.TokenType.IF)
+    .set("nil", token_1.TokenType.NIL)
+    .set("or", token_1.TokenType.OR)
+    .set("print", token_1.TokenType.PRINT)
+    .set("return", token_1.TokenType.RETURN)
+    .set("super", token_1.TokenType.SUPER)
+    .set("this", token_1.TokenType.THIS)
+    .set("true", token_1.TokenType.TRUE)
+    .set("var", token_1.TokenType.VAR)
+    .set("while", token_1.TokenType.WHILE);

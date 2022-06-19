@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -8,6 +31,10 @@ const node_process_1 = __importDefault(require("node:process"));
 const node_readline_1 = __importDefault(require("node:readline"));
 const error_sink_1 = require("./error_sink");
 const lexer_1 = require("./lexer");
+//
+const ast_printer_1 = require("./ast_printer");
+const token_1 = require("./token");
+const expr = __importStar(require("./expr"));
 function run(source) {
     const errorSink = new error_sink_1.ErrorSink();
     const lexer = new lexer_1.Lexer(errorSink, source);
@@ -20,6 +47,8 @@ function run(source) {
     for (const token of tokens) {
         console.log(token.toString());
     }
+    const expression = new expr.BinaryExpression(new expr.UnaryExpression(new token_1.Token(token_1.TokenType.MINUS, "-", null, 1), new expr.LiteralExpression(123)), new token_1.Token(token_1.TokenType.STAR, "*", null, 1), new expr.GroupingExpression(new expr.LiteralExpression(45.67)));
+    console.log(new ast_printer_1.AstPrinter().print(expression));
 }
 function runPrompt() {
     const rl = node_readline_1.default.createInterface({
