@@ -2,9 +2,11 @@ import fs from "node:fs";
 import process from "node:process";
 import readline from "node:readline";
 
+import { ArgumentParser } from "argparse";
+
+import { AstPrinter } from "./ast_printer";
 import { ErrorSink } from "./error_sink";
 import { Lexer } from "./lexer";
-import { AstPrinter } from "./ast_printer";
 import { Parser } from "./parser";
 
 function run(source: string) {
@@ -53,15 +55,24 @@ function runFile(sourcePath: string) {
 }
 
 function main() {
-  if (process.argv.length < 3 || process.argv.length > 4) {
-    console.error("Usage: penguin-lox [path]\n");
-    process.exit(64);
-  }
+  const argsParser = new ArgumentParser({
+    prog: "./penguin-lox",
+    description: "Lox interpretator. Penguin edition!",
+    add_help: true,
+  });
 
-  if (process.argv.length === 3) {
+  argsParser.add_argument("path", {
+    type: "str",
+    nargs: "?",
+    help: "a path to a source file",
+  });
+
+  const args = argsParser.parse_args(process.argv.slice(2));
+
+  if (args.path === undefined) {
     runPrompt();
   } else {
-    runFile(process.argv[3]);
+    runFile(args.path);
   }
 }
 

@@ -14,8 +14,12 @@
   "author": "Kanstantsin Sokal, me@kanstantsin.dev",
   "license": "MIT",
   "devDependencies": {
+    "@types/argparse": "^2.0.10",
     "@types/node": "^18.0.0",
     "prettier": "2.7.1",
     "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "argparse": "^2.0.1"
   }
 }
