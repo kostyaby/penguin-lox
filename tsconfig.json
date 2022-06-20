@@ -11,15 +11,9 @@
     "useDefineForClassFields": true,
     "moduleResolution": "node",
 
-    "rootDir": "./src", 
+    "rootDir": "./src",
     "outDir": "./dist"
   },
-  "include": [
-    "src/**/*",
-    "test/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules", "dist", "test", "tool"]
 }

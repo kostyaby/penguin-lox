@@ -1,2 +1,8 @@
+# Intermediate and built stuff.
 .DS_Store
+dist/
 node_modules/
+
+# Dart stuff.
+/tool/.dart_tool/
+/tool/.packages

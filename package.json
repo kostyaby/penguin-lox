@@ -4,7 +4,8 @@
   "description": "TypeScript implementation of the Lox programming language.",
   "main": "dist/main.js",
   "scripts": {
-    "build": "npx tsc"
+    "build": "npx tsc",
+    "test": "dart tool/bin/test.dart chap06_parsing --interpreter ./penguin-lox"
   },
   "keywords": [
     "lox",
