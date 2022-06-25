@@ -1,7 +1,9 @@
 import { Token, TokenType } from "./token";
+import { RuntimeError } from "./runtime_error";
 
 export class ErrorSink {
   hadError: boolean = false;
+  hadRuntimeError: boolean = false;
 
   error(lineOrToken: number | Token, message: string): void {
     if (typeof lineOrToken === "number") {
@@ -14,6 +16,11 @@ export class ErrorSink {
   report(line: number, where: string, message: string): void {
     console.error(`[line ${line}] Error${where}: ${message}`);
     this.hadError = true;
+  }
+
+  runtimeError(error: RuntimeError) {
+    console.error(`${error.message}\n[line ${error.token.line}]`);
+    this.hadRuntimeError = true;
   }
 
   private errorLine(line: number, message: string): void {

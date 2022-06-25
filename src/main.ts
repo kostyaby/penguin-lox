@@ -8,6 +8,7 @@ import { AstPrinter } from "./ast_printer";
 import { ErrorSink } from "./error_sink";
 import { Lexer } from "./lexer";
 import { Parser } from "./parser";
+import { Interpreter } from "./interpreter";
 
 function run(source: string) {
   const errorSink = new ErrorSink();
@@ -19,13 +20,17 @@ function run(source: string) {
   }
 
   const parser = new Parser(errorSink, tokens);
-  const expression = parser.parse();
+  const interpreter = new Interpreter(errorSink);
 
+  const expression = parser.parse();
   if (errorSink.hadError) {
     process.exit(65);
   }
 
-  console.log(new AstPrinter().print(expression!));
+  const value = interpreter.interpret(expression!);
+  if (errorSink.hadRuntimeError) {
+    process.exit(70);
+  }
 }
 
 function runPrompt() {
