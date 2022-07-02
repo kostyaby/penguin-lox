@@ -5,7 +5,7 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "npx tsc",
-    "test": "dart tool/bin/test.dart chap07_evaluating --interpreter ./penguin-lox"
+    "test": "dart tool/bin/test.dart chap08_statements --interpreter ./penguin-lox"
   },
   "keywords": [
     "lox",

@@ -137,7 +137,7 @@ export class Lexer {
         } else if (this.isAlpha(c)) {
           this.identifier();
         } else {
-          this.errorSink.error(this.line, "Unexpected character!");
+          this.errorSink.error(this.line, "Unexpected character.");
         }
 
         break;
@@ -202,7 +202,7 @@ export class Lexer {
     }
 
     if (this.isAtEnd()) {
-      this.errorSink.error(this.line, "Unterminated string!");
+      this.errorSink.error(this.line, "Unterminated string.");
       return;
     }
 

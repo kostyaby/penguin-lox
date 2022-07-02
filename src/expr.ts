@@ -4,6 +4,23 @@ export interface Expression {
   accept<R>(visitor: Visitor<R>): R;
 }
 
+export interface Visitor<R> {
+  visitAssignmentExpression(expression: AssignmentExpression): R;
+  visitUnaryExpression(expression: UnaryExpression): R;
+  visitBinaryExpression(expression: BinaryExpression): R;
+  visitGroupingExpression(expression: GroupingExpression): R;
+  visitLiteralExpression(expression: LiteralExpression): R;
+  visitVariableExpression(expression: VariableExpression): R;
+}
+
+export class AssignmentExpression implements Expression {
+  constructor(readonly name: Token, readonly value: Expression) {}
+
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitAssignmentExpression(this);
+  }
+}
+
 export class UnaryExpression implements Expression {
   constructor(readonly operator: Token, readonly right: Expression) {}
 
@@ -40,20 +57,10 @@ export class LiteralExpression implements Expression {
   }
 }
 
-export class Visitor<R> {
-  visitUnaryExpression(expression: UnaryExpression): R {
-    throw new Error("Not implemented!");
-  }
+export class VariableExpression implements Expression {
+  constructor(readonly name: Token) {}
 
-  visitBinaryExpression(expression: BinaryExpression): R {
-    throw new Error("Not implemented!");
-  }
-
-  visitGroupingExpression(expression: GroupingExpression): R {
-    throw new Error("Not implemented!");
-  }
-
-  visitLiteralExpression(expression: LiteralExpression): R {
-    throw new Error("Not implemented!");
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitVariableExpression(this);
   }
 }

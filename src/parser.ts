@@ -1,5 +1,6 @@
 import { Token, TokenType } from "./token";
 import * as expr from "./expr";
+import * as stmt from "./stmt";
 import { ErrorSink } from "./error_sink";
 
 export class Parser {
@@ -10,12 +11,17 @@ export class Parser {
     private readonly tokens: Token[]
   ) {}
 
-  parse(): expr.Expression | null {
-    try {
-      return this.expression();
-    } catch (error) {
-      return null;
+  parse(): stmt.Statement[] {
+    const statements: stmt.Statement[] = [];
+
+    while (!this.isAtEnd()) {
+      const statement = this.declaration();
+      if (statement) {
+        statements.push(statement);
+      }
     }
+
+    return statements;
   }
 
   private syncronize(): void {
@@ -45,18 +51,113 @@ export class Parser {
   /**
    * Grammar:
    *
-   * expression -> equality                                   ;
-   * equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
-   * comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-   * term       -> factor ( ( "-" | "+" ) factor )*           ;
-   * factor     -> unary ( ( "/" | "*" ) unary )*             ;
-   * unary      -> ( "!" | "-" ) unary | primary              ;
-   * primary    -> NUMBER | STRING | "true" | "false" | "nil"
-   *             | "(" expression ")"                         ;
+   * program     -> declaration* EOF                           ;
+   *
+   * declaration -> varDecl | statement                        ;
+   *
+   * varDecl     -> "var" IDENTIFIER ( "=" expression )? ";"   ;
+   *
+   * statement   -> exprStmt | printStmt | block               ;
+   * exprStmt    -> expression ";"                             ;
+   * printStmt   -> "print" expression ";"                     ;
+   * block       -> "{" declaration* "}"                       ;
+   *
+   * expression  -> assignment                                 ;
+   * assignment  -> IDENTIFIER "=" assignment | equality       ;
+   * equality    -> comparison ( ( "!=" | "==" ) comparison )* ;
+   * comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+   * term        -> factor ( ( "-" | "+" ) factor )*           ;
+   * factor      -> unary ( ( "/" | "*" ) unary )*             ;
+   * unary       -> ( "!" | "-" ) unary | primary              ;
+   * primary     -> NUMBER | STRING | "true" | "false" | "nil"
+   *              | "(" expression ")" | IDENTIFIER            ;
    */
 
+  private declaration(): stmt.Statement | undefined {
+    try {
+      if (this.match(TokenType.VAR)) {
+        return this.variableDeclaration();
+      }
+      return this.statement();
+    } catch (err) {
+      this.syncronize();
+      return;
+    }
+  }
+
+  private variableDeclaration(): stmt.Statement {
+    const name = this.consume(TokenType.IDENTIFIER, "Expect variable name.");
+
+    let initializer: expr.Expression | null = null;
+    if (this.match(TokenType.EQUAL)) {
+      initializer = this.expression();
+    }
+
+    this.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+
+    return new stmt.VariableStatement(name, initializer);
+  }
+
+  private statement(): stmt.Statement {
+    if (this.match(TokenType.PRINT)) {
+      return this.printStatement();
+    }
+    if (this.match(TokenType.LEFT_BRACE)) {
+      return this.blockStatement();
+    }
+
+    return this.expressionStatement();
+  }
+
+  private printStatement(): stmt.Statement {
+    const value = this.expression();
+    this.consume(TokenType.SEMICOLON, "Expect ';' after value.");
+
+    return new stmt.PrintStatement(value);
+  }
+
+  private blockStatement(): stmt.Statement {
+    const statements: stmt.Statement[] = [];
+
+    while (!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+      const statement = this.declaration();
+      if (statement) {
+        statements.push(statement);
+      }
+    }
+
+    this.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+
+    return new stmt.BlockStatement(statements);
+  }
+
+  private expressionStatement(): stmt.Statement {
+    const value = this.expression();
+    this.consume(TokenType.SEMICOLON, "Expect ';' after value.");
+
+    return new stmt.ExpressionStatement(value);
+  }
+
   private expression(): expr.Expression {
-    return this.equality();
+    return this.assignment();
+  }
+
+  private assignment(): expr.Expression {
+    const expression = this.equality();
+
+    if (this.match(TokenType.EQUAL)) {
+      const equals = this.previous();
+      const value = this.assignment();
+
+      if (expression instanceof expr.VariableExpression) {
+        const name = (expression as expr.VariableExpression).name;
+        return new expr.AssignmentExpression(name, value);
+      }
+
+      this.errorSink.error(equals, "Invalid assignment target.");
+    }
+
+    return expression;
   }
 
   private equality(): expr.Expression {
@@ -137,14 +238,18 @@ export class Parser {
       return new expr.LiteralExpression(this.previous().literal);
     }
 
+    if (this.match(TokenType.IDENTIFIER)) {
+      return new expr.VariableExpression(this.previous());
+    }
+
     if (this.match(TokenType.LEFT_PAREN)) {
       const expression = this.expression();
-      this.consume(TokenType.RIGHT_PAREN, "Expected ')' after expression!");
+      this.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
 
       return new expr.GroupingExpression(expression);
     }
 
-    throw this.error(this.peek(), "Expected expression.");
+    throw this.error(this.peek(), "Expect expression.");
   }
 
   /**

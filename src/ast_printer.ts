@@ -1,8 +1,15 @@
 import * as expr from "./expr";
 
-export class AstPrinter extends expr.Visitor<string> {
+export class AstPrinter implements expr.Visitor<string> {
   print(expression: expr.Expression): string {
     return expression.accept(this);
+  }
+
+  visitAssignmentExpression(expression: expr.AssignmentExpression): string {
+    return this.parenthesize(
+      `assign ${expression.name.lexeme}`,
+      expression.value
+    );
   }
 
   visitUnaryExpression(expression: expr.UnaryExpression): string {
@@ -27,6 +34,10 @@ export class AstPrinter extends expr.Visitor<string> {
     }
 
     return JSON.stringify(expression.value);
+  }
+
+  visitVariableExpression(expression: expr.VariableExpression): string {
+    return this.parenthesize(`var ${expression.name.lexeme}`);
   }
 
   private parenthesize(

@@ -1,19 +1,23 @@
 import * as expr from "./expr";
-import { Token, TokenType } from "./token";
-import { RuntimeError } from "./runtime_error";
+import * as stmt from "./stmt";
+import { Environment } from "./environment";
 import { ErrorSink } from "./error_sink";
+import { RuntimeError } from "./runtime_error";
+import { Token, TokenType } from "./token";
 
 import * as _ from "lodash";
 
-export class Interpreter extends expr.Visitor<any> {
-  constructor(private readonly errorSink: ErrorSink) {
-    super();
-  }
+export class Interpreter implements expr.Visitor<any>, stmt.Visitor<void> {
+  constructor(
+    private readonly errorSink: ErrorSink,
+    private environment: Environment
+  ) {}
 
-  interpret(expression: expr.Expression): void {
+  interpret(statements: stmt.Statement[]): void {
     try {
-      const value = this.evaluate(expression);
-      console.log(JSON.stringify(value));
+      for (const statement of statements) {
+        this.execute(statement);
+      }
     } catch (err) {
       if (err instanceof RuntimeError) {
         this.errorSink.runtimeError(err);
@@ -23,8 +27,18 @@ export class Interpreter extends expr.Visitor<any> {
     }
   }
 
+  execute(statement: stmt.Statement): void {
+    statement.accept(this);
+  }
+
   evaluate(expression: expr.Expression): any {
     return expression.accept(this);
+  }
+
+  visitAssignmentExpression(expression: expr.AssignmentExpression): any {
+    const value = this.evaluate(expression.value);
+    this.environment.assign(expression.name, value);
+    return value;
   }
 
   visitUnaryExpression(expression: expr.UnaryExpression): any {
@@ -42,7 +56,7 @@ export class Interpreter extends expr.Visitor<any> {
       }
     }
 
-    throw new RuntimeError(expression.operator, "Invalid unary expression!");
+    throw new RuntimeError(expression.operator, "Invalid unary expression.");
   }
 
   visitBinaryExpression(expression: expr.BinaryExpression): any {
@@ -94,7 +108,7 @@ export class Interpreter extends expr.Visitor<any> {
 
         throw new RuntimeError(
           expression.operator,
-          "Operands must be two numbers or two strings!"
+          "Operands must be two numbers or two strings."
         );
       }
 
@@ -109,7 +123,7 @@ export class Interpreter extends expr.Visitor<any> {
       }
     }
 
-    throw new RuntimeError(expression.operator, "Invalid binary expression!");
+    throw new RuntimeError(expression.operator, "Invalid binary expression.");
   }
 
   visitGroupingExpression(expression: expr.GroupingExpression): any {
@@ -118,6 +132,47 @@ export class Interpreter extends expr.Visitor<any> {
 
   visitLiteralExpression(expression: expr.LiteralExpression): any {
     return expression.value;
+  }
+
+  visitVariableExpression(expression: expr.VariableExpression): any {
+    return this.environment.get(expression.name);
+  }
+
+  visitBlockStatement(statement: stmt.BlockStatement): void {
+    const previousEnvironment = this.environment;
+    try {
+      this.environment = new Environment(this.environment);
+      for (const innerStatement of statement.statements) {
+        this.execute(innerStatement);
+      }
+    } finally {
+      this.environment = previousEnvironment;
+    }
+  }
+
+  visitExpressionStatement(statement: stmt.ExpressionStatement): void {
+    this.evaluate(statement.expression);
+  }
+
+  visitPrintStatement(statement: stmt.PrintStatement): void {
+    const value = this.evaluate(statement.expression);
+
+    if (_.isString(value) || _.isNumber(value) || _.isBoolean(value)) {
+      console.log(value);
+    } else if (_.isNil(value)) {
+      console.log("nil");
+    } else {
+      console.log(JSON.stringify(value));
+    }
+  }
+
+  visitVariableStatement(statement: stmt.VariableStatement): void {
+    let value: expr.Expression | null = null;
+    if (statement.initializer) {
+      value = this.evaluate(statement.initializer);
+    }
+
+    this.environment.define(statement.name.lexeme, value);
   }
 
   private isTruthy(value: any): boolean {
@@ -139,7 +194,7 @@ export class Interpreter extends expr.Visitor<any> {
       return;
     }
 
-    throw new RuntimeError(operator, "Operand must be a number!");
+    throw new RuntimeError(operator, "Operand must be a number.");
   }
 
   private checkNumberOperands(operator: Token, left: any, right: any): void {
@@ -147,6 +202,6 @@ export class Interpreter extends expr.Visitor<any> {
       return;
     }
 
-    throw new RuntimeError(operator, "Operands must be numbers!");
+    throw new RuntimeError(operator, "Operands must be numbers.");
   }
 }

@@ -5,12 +5,13 @@ import readline from "node:readline";
 import { ArgumentParser } from "argparse";
 
 import { AstPrinter } from "./ast_printer";
+import { Environment } from "./environment";
 import { ErrorSink } from "./error_sink";
+import { Interpreter } from "./interpreter";
 import { Lexer } from "./lexer";
 import { Parser } from "./parser";
-import { Interpreter } from "./interpreter";
 
-function run(source: string) {
+function run(source: string, environment: Environment = new Environment()) {
   const errorSink = new ErrorSink();
   const lexer = new Lexer(errorSink, source);
   const tokens = lexer.scanTokens();
@@ -20,20 +21,22 @@ function run(source: string) {
   }
 
   const parser = new Parser(errorSink, tokens);
-  const interpreter = new Interpreter(errorSink);
+  const interpreter = new Interpreter(errorSink, environment);
 
-  const expression = parser.parse();
+  const statements = parser.parse();
   if (errorSink.hadError) {
     process.exit(65);
   }
 
-  const value = interpreter.interpret(expression!);
+  interpreter.interpret(statements);
   if (errorSink.hadRuntimeError) {
     process.exit(70);
   }
 }
 
 function runPrompt() {
+  const environment = new Environment();
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -41,7 +44,7 @@ function runPrompt() {
 
   rl.prompt();
   rl.on("line", (sourceLine) => {
-    run(sourceLine);
+    run(sourceLine, environment);
     rl.prompt();
   }).on("close", () => {
     process.exit(0);
